@@ -1,0 +1,3 @@
+[submodule "gwangju_scrapy"]
+	path = gwangju_scrapy
+	url = https://github.com/Jodayday/gwangju_scrapy.git
