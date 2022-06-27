@@ -1,18 +1,9 @@
-import os
-import json
 import scrapy
 import MySQLdb
 from MySQLdb.connections import Connection
-from pathlib import Path
 from scrapy.http.response.html import HtmlResponse
 from newscrawl.items import NewsItem
-
-
-# db json 불러오기
-KEY_DIR = Path(__file__).resolve().parent.parent.parent
-KEY_PATH = Path.joinpath(KEY_DIR, 'dbkey.json')
-KEY_DICT = json.loads(open(KEY_PATH, 'r').read())
-DB = KEY_DICT['DB']
+from ..settings import DB
 
 
 class CollectionSpider(scrapy.Spider):
@@ -25,7 +16,8 @@ class CollectionSpider(scrapy.Spider):
 
     def start_requests(self):
         """db에서 값을 가져오고 크롤링 진행 """
-        conn : Connection = MySQLdb.connect(host=DB['host'],user=DB['user'],password=DB['password'],database=DB['database'],port=DB['port'])
+        conn: Connection = MySQLdb.connect(
+            host=DB['host'], user=DB['user'], password=DB['password'], database=DB['database'], port=DB['port'])
         sql = "SELECT * FROM CrawlLists "
         cur = conn.cursor()
         cur.execute(sql)
@@ -42,14 +34,15 @@ class CollectionSpider(scrapy.Spider):
         times = response.css(s3).getall()
         for link, time in zip(links, times):
             url = response.urljoin(link)
-            yield scrapy.Request(url=url, callback=self.news, cb_kwargs=dict(name=name,time=time,s2=s2))
+            yield scrapy.Request(url=url, callback=self.news, cb_kwargs=dict(name=name, time=time, s2=s2))
 
-    def news(self, response: HtmlResponse, name,time,s2):
+    def news(self, response: HtmlResponse, name, time, s2):
         """파싱 완료 후 파이프로 전달 """
         item = NewsItem()
         item['name'] = name  # db에서 가져올것
-        item['title'] = response.css().get(s2).strip()
+        item['title'] = response.css(s2).get().strip()
         item['link'] = response.url
         item['time'] = time
+        item['error'] = False
 
         yield item
