@@ -1,37 +1,35 @@
 import scrapy
-import MySQLdb
-from MySQLdb.connections import Connection
+
 from scrapy.http.response.html import HtmlResponse
 from newscrawl.items import NewsItem
-from ..settings import DB
 
 
-class CollectionSpider(scrapy.Spider):
+class testSpider(scrapy.Spider):
     """
-    광주의 공지사항들 크롤링
-    db의 참조 데이터
-    name, link , select1(링크),2(title),3(time)
+    광주의 공지사항들 크롤링 테스트
+
     """
-    name = 'collection'
+    name = 'test'
 
     custom_settings = {
-        'ITEM_PIPELINES': {
-            'newscrawl.pipelines.NewsPipeline': 300,
-        }
+        'FEED_URI': 'result.json',
+        'FEED_FORMAT': 'json',
+        'FEED_EXPORT_ENCODING': 'utf-8',
+        'FEED_EXPORT_INDENT': 2
+
     }
 
     def start_requests(self):
-        """db에서 값을 가져오고 크롤링 진행 """
-        conn: Connection = MySQLdb.connect(
-            host=DB['host'], user=DB['user'], password=DB['password'], database=DB['database'], port=DB['port'])
-        sql = "SELECT * FROM CrawlLists "
-        cur = conn.cursor()
-        cur.execute(sql)
-        result = cur.fetchall()
-        conn.close()
-
+        """name, link , select1(링크),2(title),3(time)"""
+        name = '광주동구청'
+        url = 'https://www.donggu.kr/board.es?mid=a10101010000&bid=0001'
+        s1 = 'div#listView > ul > li.title > a::attr("href")'
+        s2 = 'div.tstyle_view > div.title::text'
+        s3 = 'div#listView > ul > li.col03::text'
+        result = [[name, url, s1, s2, s3], ]
+        print(result, "결과는?")
         # 시작
-        for _, name, url, s1, s2, s3, _ in result:
+        for name, url, s1, s2, s3 in result:
             yield scrapy.Request(url=url, callback=self.parse, cb_kwargs=dict(name=name, s1=s1, s2=s2, s3=s3))
 
     def parse(self, response: HtmlResponse, name, s1, s2, s3):
