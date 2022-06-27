@@ -7,6 +7,8 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+from pathlib import Path
+import json
 BOT_NAME = 'newscrawl'
 
 SPIDER_MODULES = ['newscrawl.spiders']
@@ -62,9 +64,9 @@ CONCURRENT_REQUESTS_PER_IP = 16
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    'news.pipelines.NewsPipeline': 300,
-# }
+ITEM_PIPELINES = {
+    'newscrawl.pipelines.NewsPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -99,3 +101,10 @@ CONCURRENT_REQUESTS_PER_IP = 16
 
 # # 기본 들여쓰기
 # FEED_EXPORT_INDENT = 2
+
+# db json 불러오기
+
+KEY_DIR = Path(__file__).resolve().parent.parent
+KEY_PATH = Path.joinpath(KEY_DIR, 'dbkey.json')
+KEY_DICT = json.loads(open(KEY_PATH, 'r').read())
+DB = KEY_DICT['DB']
